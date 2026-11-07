@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.png
+!docs/*.png
+!docs/centre/*.png
+!docs/centre/modern/*.png
+oap-sdk/
+__pycache__/
+
+# the attribution signing key stays local, never pushed
+secret/

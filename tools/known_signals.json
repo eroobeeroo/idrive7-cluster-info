@@ -1,0 +1,268 @@
+{
+ "comment": "Signal flags the installer accepts on the car, as the apps of idrive7-apps (cauliflowermossgrape and eroobeeroo) declare them: r needs a getter, s a notifier; the head unit's app manager refuses an app whose flags its catalog does not have (generateSomeipInterfaces). tools/test_signals.js checks every app.json against this. KombiIF.displayRangeElectricVehicle (get, notify): from the G05 PHEV's own catalog (Cluster Layouts logs).",
+ "signals": {
+  "de.bmw.body.Light": {
+   "StatusFunctionsIndicators": [
+    "s"
+   ],
+   "StatusFunctionsIndicators2": [
+    "s"
+   ]
+  },
+  "de.bmw.body.steeringwheelcomfort.SteeringWheelClimate": {
+   "heatingState": [
+    "rs"
+   ]
+  },
+  "de.bmw.chassis.SteeringAngle": {
+   "ActualSteeringAngleDriver": [
+    "s"
+   ],
+   "actualSteeringAngleDriverNoCRC": [
+    "s"
+   ]
+  },
+  "de.bmw.chassis.VehicleModel": {
+   "LaneSlope": [
+    "s"
+   ],
+   "MassVehicle": [
+    "s"
+   ]
+  },
+  "de.bmw.chassis.VehicleStabilizationManagement": {
+   "StabilizationManagement": [
+    "s"
+   ]
+  },
+  "de.bmw.infotainment.KombiIF": {
+   "statusBordcomputerAverage": [
+    "rs"
+   ],
+   "statusBordcomputerTravelData": [
+    "rs"
+   ],
+   "statusDisplayElectricalPowerDistribution": [
+    "rs"
+   ],
+   "statusRangeTankStatus": [
+    "rs"
+   ],
+   "displayRangeElectricVehicle": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.KombiInterface_2": {
+   "cbsDataSBA": [
+    "rs"
+   ],
+   "cbsDataServiceList": [
+    "rs"
+   ],
+   "ccList": [
+    "rs"
+   ],
+   "newCCMessage": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.checkcontrol.CheckControlMaster": {
+   "basicList": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.climate.Climate": {
+   "statusSeatHeatingDR": [
+    "rs"
+   ],
+   "statusSeatHeatingDRR": [
+    "rs"
+   ],
+   "statusSeatHeatingPS": [
+    "rs"
+   ],
+   "statusSeatHeatingPSR": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.climate.Climate2": {
+   "statusACFront": [
+    "rs"
+   ],
+   "statusActualValuePowerACCompressor": [
+    "rs"
+   ],
+   "statusAirConditionDRStatus": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.climate.climatemaster.ClimateMaster": {
+   "statusAirCondAC": [
+    "rs"
+   ],
+   "statusClimateSystemOn": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.controlelements.FrontCCU": {
+   "statusPushButtonsState": [
+    "rs"
+   ],
+   "statusRotaryEncoderState": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.drivingexcitement.Efficiencytainment2": {
+   "statusBatteryTemperature": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.drivingexcitement.FES": {
+   "statusActualValueTorque2": [
+    "rs"
+   ],
+   "statusFESVehicleDynamicSwitchHMI": [
+    "rs"
+   ],
+   "statusSwitchDriveDynamicSport2": [
+    "rs"
+   ],
+   "statusVehicleDynamicEngine": [
+    "rs"
+   ],
+   "statusVehicleDynamicEngineMaxValue": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.lsc.LSCDataSink": {
+   "statusHighVoltageStorage": [
+    "s"
+   ]
+  },
+  "de.bmw.infotainment.misc.MDrive": {
+   "dataDisplayGearbox": [
+    "s"
+   ],
+   "statusMSystem": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.personalization.SessionManager": {
+   "currentUserAccountReference": [
+    "r"
+   ]
+  },
+  "de.bmw.infotainment.vehicle.CDS": {
+   "datenFahrdynamiksensorErweitert": [
+    "rs"
+   ],
+   "statusBattery2": [
+    "rs"
+   ],
+   "statusEngineSpeed2": [
+    "rs"
+   ],
+   "statusEngineStatus": [
+    "rs"
+   ],
+   "statusEngineTemperature": [
+    "rs"
+   ],
+   "statusHandBrake": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.vehicle.CDS2": {
+   "statusInjectionVolume": [
+    "rs"
+   ],
+   "statusLateralAccelerationMassCenter": [
+    "rs"
+   ],
+   "statusLongitudinalAccelerationMassCenter": [
+    "rs"
+   ],
+   "statusPushButtonMSA2": [
+    "rs"
+   ],
+   "statusYawVelocityVehicle": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.vehicle.TPMS": {
+   "statusTargetTyrePressure": [
+    "rs"
+   ],
+   "statusTyrePressure": [
+    "rs"
+   ],
+   "statusTyreTemperature": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.vehicle.Vehicle": {
+   "statusDayNightChangeOver": [
+    "rs"
+   ],
+   "statusNewCurrentUnitsStatusExt": [
+    "rs"
+   ]
+  },
+  "de.bmw.infotainment.vehicle.Vehicle2": {
+   "highVoltageStorageInfoToExternal": [
+    "s"
+   ],
+   "statusCarSpeed2": [
+    "rs"
+   ],
+   "statusOilDipstick2": [
+    "rs"
+   ],
+   "statusVehicleMass": [
+    "rs"
+   ],
+   "statusVehiclePartType": [
+    "rs"
+   ]
+  },
+  "de.bmw.infrastructure.EnvironmentalInformation": {
+   "ExteriorTemperature": [
+    "s"
+   ],
+   "UnitBN2020": [
+    "rs"
+   ]
+  },
+  "de.bmw.infrastructure.VehicleCondition": {
+   "VehicleCondition": [
+    "s"
+   ]
+  },
+  "de.bmw.infrastructure.VehicleInformation": {
+   "DataPowerTrain2": [
+    "s"
+   ],
+   "Range": [
+    "s"
+   ],
+   "statusGearboxDrive": [
+    "s"
+   ]
+  },
+  "de.bmw.infrastructure.analytics.BasicDataSet": {
+   "basicDataSet": [
+    "s"
+   ]
+  },
+  "de.bmw.powertrain.AcceleratorPedal": {
+   "AngleAcceleratorPedal": [
+    "s"
+   ]
+  },
+  "de.bmw.powertrain.Powertrain": {
+   "ActualValueRPMWheel": [
+    "s"
+   ]
+  }
+ }
+}

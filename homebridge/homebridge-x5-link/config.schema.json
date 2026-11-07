@@ -1,0 +1,15 @@
+{
+  "pluginAlias": "X5Link",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Open the **Home Link** app in the car and enter the pairing code it shows. The car finds this computer on your Wi-Fi by itself (port 8582: allow it through the Windows firewall, see the README).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": { "title": "Name", "type": "string", "default": "X5 Link", "required": true },
+      "pairingCode": { "title": "Pairing code (from the Home Link app in the car)", "type": "string", "placeholder": "ABCD-EFGH-JKMN", "required": true },
+      "units": { "title": "Ranges in", "type": "string", "default": "mi", "oneOf": [ { "title": "Miles", "enum": ["mi"] }, { "title": "Kilometres", "enum": ["km"] } ] },
+      "prefix": { "title": "Name in front of each sensor", "type": "string", "default": "X5", "description": "X5 Charge, X5 Fuel, ... (empty: Charge, Fuel, ...)" }
+    }
+  }
+}

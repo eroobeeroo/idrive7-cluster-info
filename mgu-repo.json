@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "apps": {
+    "path": "apps/*",
+    "manifest": "app.json",
+    "icon": "icon.png",
+    "mguHmi": [
+      "ID7"
+    ],
+    "requires": {
+      "idrive7-renderd": "2.1.7",
+      "mgu-inputgate": "1.0.0",
+      "cluster-render": "0.3.10"
+    },
+    "build": {
+      "python": "kit/tools/build.py",
+      "args": [
+        "{id}"
+      ],
+      "sdk": "oap-sdk",
+      "output": "dist/{id}@{version}.tgz",
+      "network": []
+    }
+  }
+}

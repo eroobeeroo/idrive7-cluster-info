@@ -1,0 +1,25 @@
+{
+  "name": "homebridge-x5-link",
+  "displayName": "X5 Link",
+  "version": "0.2.0",
+  "description": "Your car in Apple Home from the Home Link app on its iDrive head unit: charge, fuel, ranges, outside temperature, and arrived / started / leaving sensors for automations.",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "eroobeeroo",
+  "keywords": [
+    "homebridge-plugin",
+    "bmw",
+    "idrive",
+    "homekit"
+  ],
+  "engines": {
+    "node": ">=18.15.0",
+    "homebridge": ">=1.6.0 || ^2.0.0-beta.0"
+  },
+  "files": [
+    "index.js",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ]
+}

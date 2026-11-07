@@ -1,0 +1,712 @@
+{
+  "id": "home_link",
+  "title": "Home Link",
+  "description": "Your car in Apple Home: charge, fuel, ranges and temperatures as HomeKit sensors, and arrived / started / leaving events for automations, through Homebridge on a computer at home",
+  "version": "0.3.1",
+  "startType": "autostart",
+  "vendor": "custom",
+  "loggingId": "OA9H",
+  "iconGlyph": "home",
+  "internet": true,
+  "shared": [
+    "data.js",
+    "providers.js",
+    "attribution.js",
+    "attribution_sig.js"
+  ],
+  "signals": {
+    "de.bmw.infotainment.vehicle.CDS": {
+      "statusEngineSpeed2": "rs",
+      "statusEngineTemperature": "rs",
+      "statusEngineStatus": "rs"
+    },
+    "de.bmw.infotainment.vehicle.CDS2": {
+      "statusLongitudinalAccelerationMassCenter": "rs",
+      "statusLateralAccelerationMassCenter": "rs",
+      "statusYawVelocityVehicle": "rs"
+    },
+    "de.bmw.infotainment.vehicle.Vehicle2": {
+      "statusCarSpeed2": "rs",
+      "statusVehiclePartType": "rs"
+    },
+    "de.bmw.infotainment.drivingexcitement.FES": {
+      "statusSwitchDriveDynamicSport2": "rs",
+      "statusVehicleDynamicEngine": "rs",
+      "statusActualValueTorque2": "rs",
+      "statusFESVehicleDynamicSwitchHMI": "rs"
+    },
+    "de.bmw.infrastructure.analytics.BasicDataSet": {
+      "_optional": "gearbox oil temperature; the xDrive split then comes from the transfer case or the drive mode",
+      "basicDataSet": "s"
+    },
+    "de.bmw.infrastructure.EnvironmentalInformation": {
+      "ExteriorTemperature": "s",
+      "UnitBN2020": "rs"
+    },
+    "de.bmw.infotainment.misc.MDrive": {
+      "statusMSystem": "rs",
+      "dataDisplayGearbox": "s"
+    },
+    "de.bmw.infrastructure.VehicleInformation": {
+      "statusGearboxDrive": "s",
+      "DataPowerTrain2": "s",
+      "Range": "s"
+    },
+    "com.harman.infotainment.systemfunctions.tasu.tasu.InternalTasu": {
+      "_instances": "SystemFunctionsInternalTasuInst1",
+      "_methods": [
+        "sendTasuRequest"
+      ],
+      "_broadcasts": [
+        "sendTasuResponse"
+      ]
+    },
+    "de.bmw.infotainment.drivingexcitement.Efficiencytainment2": {
+      "_optional": "the battery's temperature (eDrive Live's is used instead)",
+      "statusBatteryTemperature": "rs"
+    },
+    "de.bmw.infotainment.KombiIF": {
+      "_optional": "the car's power distribution figures, and its fuel and electric ranges",
+      "statusDisplayElectricalPowerDistribution": "rs",
+      "statusRangeTankStatus": "rs",
+      "displayRangeElectricVehicle": "rs"
+    },
+    "de.bmw.chassis.SteeringAngle": {
+      "_optional": "the steering angle (the Steering page)",
+      "ActualSteeringAngleDriver": "s"
+    }
+  },
+  "screens": [
+    {
+      "name": "MAIN",
+      "kind": "canvas",
+      "title": "Home Link",
+      "buttons": [
+        [
+          "BTN_FIND",
+          "Find the bridge again"
+        ],
+        [
+          "BTN_CODE",
+          "New code"
+        ],
+        [
+          "BTN_SETTINGS",
+          "Settings"
+        ]
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "key": "vehicle",
+      "label": "Vehicle",
+      "type": "choice",
+      "default": "auto",
+      "options": [
+        [
+          "auto",
+          "Auto (found from the car)"
+        ],
+        [
+          "phev",
+          "Plug-in hybrid (charge, electric range, battery power)"
+        ],
+        [
+          "ice",
+          "Petrol or diesel (boost, timing, torque, fuel rail)"
+        ]
+      ]
+    },
+    {
+      "key": "tankLitres",
+      "label": "Fuel tank size",
+      "type": "number",
+      "unit": "L",
+      "default": 69,
+      "steps": [
+        40,
+        42,
+        46,
+        50,
+        52,
+        55,
+        57,
+        59,
+        60,
+        63,
+        65,
+        66,
+        68,
+        69,
+        70,
+        74,
+        80,
+        83,
+        85,
+        90
+      ]
+    },
+    {
+      "key": "batteryReads",
+      "label": "Battery charge readings",
+      "type": "choice",
+      "default": "home",
+      "options": [
+        [
+          "home",
+          "From eDrive Live, else a few seconds of battery reads at home"
+        ],
+        [
+          "off",
+          "From eDrive Live only (the battery unit left alone)"
+        ]
+      ]
+    },
+    {
+      "key": "speedUnit",
+      "label": "Speed unit",
+      "type": "choice",
+      "default": "mph",
+      "options": [
+        [
+          "mph",
+          "mph"
+        ],
+        [
+          "kmh",
+          "km/h"
+        ]
+      ]
+    },
+    {
+      "key": "demo",
+      "label": "Demo data",
+      "type": "choice",
+      "default": "off",
+      "options": [
+        [
+          "on",
+          "Always"
+        ],
+        [
+          "off",
+          "Never"
+        ]
+      ]
+    },
+    {
+      "key": "eFull",
+      "label": "Electric range when full (until the car's own is found)",
+      "type": "number",
+      "unit": "mi",
+      "default": 31,
+      "steps": [
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        31,
+        32,
+        34,
+        36,
+        38,
+        40,
+        45,
+        50
+      ]
+    }
+  ],
+  "config": {
+    "scaling": {
+      "rpm": {
+        "factor": 0.25,
+        "offset": 0,
+        "invalid": 65535
+      },
+      "speed": {
+        "factor": 0.015625,
+        "offset": 0,
+        "invalid": 65535
+      },
+      "accel": {
+        "factor": 0.002,
+        "offset": -65,
+        "invalid": 65535
+      },
+      "ambient": {
+        "factor": 0.5,
+        "offset": -40,
+        "invalid": 255
+      },
+      "engineTemp": {
+        "factor": 1,
+        "offset": -48,
+        "invalid": 255
+      },
+      "gearboxTemp": {
+        "factor": 1,
+        "offset": -48,
+        "invalid": 255,
+        "note": "a value that never changes is shown as no data (some cars don't fill this field); raw values go to the log ('raw gearbox oil')"
+      },
+      "boost": {
+        "factor": 0.01,
+        "offset": 0,
+        "invalid": 255,
+        "note": "sport display boost; raw values go to the log ('raw FES boost')"
+      },
+      "torque": {
+        "factor": 0.5,
+        "offset": -1023.5,
+        "invalid": 65535,
+        "invalidFrom": 4095,
+        "note": "12 bit, 0.5 Nm per bit, 0 Nm at raw 2047 (negative = engine braking), 4095 = no value. With factor 1 a running engine read as ~2047 Nm."
+      },
+      "tyreTemp": {
+        "factor": 1,
+        "offset": -40,
+        "invalid": 65535,
+        "note": "degrees + 40, in the car's temperature unit (deg F on a car set to Fahrenheit: main.js converts it): a G05 PHEV sent raw 53-57 on a ~10 deg C day (2.8.0 log), not deci-Kelvin. Values outside -40..150 deg C are shown as no data; the raw values go to the log ('raw tyre temperature')"
+      },
+      "torqueSplitRear": {
+        "factor": 0.01,
+        "offset": 0,
+        "invalid": 65535
+      },
+      "tyrePress": {
+        "factor": 0.1,
+        "offset": 0,
+        "invalidFrom": 65532,
+        "note": "0.1 per bit in the car's pressure unit (bar / kPa / psi, from Vehicle.statusNewCurrentUnitsStatusExt; main.js converts it to bar). BMW x_call: raw * 0.1, valid up to 530; a car in bar sent raw 22-25 = 2.2-2.5 bar, a car in psi about 410 = 41 psi. Read as 0.1 kPa before, every tyre came out at 0.02 bar and was hidden."
+      },
+      "sportPct": {
+        "factor": 1,
+        "offset": 0,
+        "invalid": 255,
+        "note": "sport display power / torque in % of the car maximum; calibrate if the raw value is not 0-100"
+      },
+      "batteryTemp": {
+        "factor": 1,
+        "offset": -50,
+        "invalid": 255,
+        "comment": "Efficiencytainment2.statusBatteryTemperature (X5 45e: raw 76 with the cells at ~26 C)"
+      },
+      "yaw": {
+        "factor": 0.005,
+        "offset": -163.84,
+        "invalid": 65535,
+        "note": "deg/s; the factor and offset of the car's CAN yaw-rate signal, not yet confirmed on this field: the raw values show on Cluster Layouts' Signals page and go to the log ('raw statusYawVelocityVehicle')"
+      },
+      "steer": {
+        "factor": 0.04395,
+        "offset": 0,
+        "signed16": true,
+        "invalid": 32767,
+        "note": "degrees at the wheel, negative to the right as BMW counts; the CAN steering-angle factor, signed 16 bit, not yet confirmed on this field: raw values on the Signals page and in the log"
+      }
+    },
+    "xdrive": {
+      "comment": "xDrive split straight from the transfer case unit (LMV, address 0x19), read on the Chassis page when the car's own split signal has nothing. LMV_MOMENT (22 DB32): actual torque to the front axle, signed, Nm = raw / 4 (bytes 0-1); qualifier bytes 2-3, target torque 4-5 (layout from BMW's LMV_G11 description). Split % = front torque / (engine torque x gear ratio): an estimate (no converter multiplication, no losses).",
+      "front": [
+        {
+          "ecu": 25,
+          "did": "DB32",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.25,
+          "signed": true,
+          "min": -200,
+          "max": 2500,
+          "note": "LMV_MOMENT.ISTMOMENT, actual torque to the front axle"
+        }
+      ],
+      "gearRatios": [
+        5.0,
+        3.2,
+        2.143,
+        1.72,
+        1.313,
+        1.0,
+        0.823,
+        0.64
+      ],
+      "gearRatiosNote": "ZF 8HP, 1st..8th"
+    },
+    "dme": {
+      "comment": "Intake / fuel values from the engine unit (DME, ecu 18 = 0x12) with UDS 0x22. F4xx = the standard OBD PIDs (F40F = PID 0x0F); a candidate with \"obd\" instead of \"did\" asks for the same PID with OBD service 01 (some engine units refuse the F4xx identifiers with NRC 31). Candidates are tried in order; the first plausible one wins. value = raw * factor + offset (bar / deg C). If a tile says 'not available from this DME', add your engine's BMW-specific DID here. boost: tried in order when the sport display sends no boost (setting 'Boost from'); absolute pressure in kPa, the outside air pressure (baro) is subtracted. boostTarget / boostActual: boost pressure setpoint and actual (absolute kPa, baro subtracted), BMW DIDs first, then OBD PID 0x70; the tile only shows when the target answers. loadTarget / loadActual: requested and actual relative air charge in %. timing: OBD PID 0x0E, degrees before top dead centre. misfire: OBD service 06 monitor results (MID A2 = cylinder 1, A3 = cylinder 2 ...), tid 0C = misfires this driving cycle (0B = average of the last 10 cycles); engine units that only speak UDS are asked 0x22 F6A2... egs: gearbox temperature from the gearbox unit (EGS); give each candidate its \"ecu\".",
+      "ecu": 18,
+      "iat": [
+        {
+          "did": "F40F",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 150
+        },
+        {
+          "did": "F477",
+          "bytes": 1,
+          "at": 1,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 150,
+          "note": "charge air cooler temperature, bank 1 sensor 1"
+        },
+        {
+          "obd": "0F",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 150,
+          "note": "the same PID with OBD service 01, for engine units that refuse F40F with NRC 31"
+        }
+      ],
+      "hpfp": [
+        {
+          "did": "F423",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.1,
+          "offset": 0,
+          "min": 0,
+          "max": 500,
+          "note": "fuel rail gauge pressure (direct injection), 10 kPa per bit"
+        },
+        {
+          "did": "F459",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.1,
+          "offset": -1,
+          "min": 0,
+          "max": 500,
+          "note": "fuel rail absolute pressure, 10 kPa per bit"
+        },
+        {
+          "obd": "23",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.1,
+          "offset": 0,
+          "min": 0,
+          "max": 500,
+          "note": "OBD service 01 PID 0x23 (same as F423)"
+        }
+      ],
+      "lpfp": [
+        {
+          "did": "F40A",
+          "bytes": 1,
+          "at": 0,
+          "factor": 0.03,
+          "offset": 0,
+          "min": 0.5,
+          "max": 8,
+          "note": "fuel pressure (gauge), 3 kPa per bit"
+        },
+        {
+          "did": "F422",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.00079,
+          "offset": 0,
+          "min": 0.5,
+          "max": 15,
+          "note": "fuel rail pressure relative to manifold, 0.079 kPa per bit"
+        },
+        {
+          "obd": "0A",
+          "bytes": 1,
+          "at": 0,
+          "factor": 0.03,
+          "offset": 0,
+          "min": 0.5,
+          "max": 8,
+          "note": "OBD service 01 PID 0x0A (same as F40A)"
+        },
+        {
+          "obd": "22",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.00079,
+          "offset": 0,
+          "min": 0.5,
+          "max": 15,
+          "note": "OBD service 01 PID 0x22 (same as F422)"
+        }
+      ],
+      "oil": [
+        {
+          "obd": "5C",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 170,
+          "note": "engine oil temperature, OBD service 01 PID 0x5C - only read while the car's own signal (CDS) sends none"
+        },
+        {
+          "did": "F45C",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 170
+        }
+      ],
+      "boost": [
+        {
+          "did": "F470",
+          "bytes": 2,
+          "at": 3,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD PID 0x70 boost pressure control: actual boost pressure sensor A (absolute), 1/32 kPa"
+        },
+        {
+          "did": "F487",
+          "bytes": 2,
+          "at": 1,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD PID 0x87 intake manifold absolute pressure sensor A, 1/32 kPa"
+        },
+        {
+          "did": "F40B",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": 0,
+          "min": 20,
+          "max": 255,
+          "note": "OBD PID 0x0B intake manifold absolute pressure, kPa (max 255 = 1.5 bar boost)"
+        },
+        {
+          "obd": "0B",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": 0,
+          "min": 20,
+          "max": 255,
+          "note": "OBD service 01 PID 0x0B (same as F40B)"
+        }
+      ],
+      "baro": [
+        {
+          "did": "F433",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": 0,
+          "min": 50,
+          "max": 115,
+          "note": "OBD PID 0x33 barometric pressure, kPa (101.3 when not available)"
+        },
+        {
+          "obd": "33",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": 0,
+          "min": 50,
+          "max": 115,
+          "note": "OBD service 01 PID 0x33 (same as F433)"
+        }
+      ],
+      "boostTarget": [
+        {
+          "did": "4AB0",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.00390625,
+          "offset": 0,
+          "min": 20,
+          "max": 400,
+          "note": "BMW boost pressure setpoint (absolute), hPa = raw * 10 / 256"
+        },
+        {
+          "did": "F470",
+          "bytes": 2,
+          "at": 1,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD PID 0x70: commanded boost pressure A (absolute), 1/32 kPa"
+        },
+        {
+          "obd": "70",
+          "bytes": 2,
+          "at": 1,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD service 01 PID 0x70 (same as F470)"
+        }
+      ],
+      "boostActual": [
+        {
+          "did": "580B",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.00390625,
+          "offset": 0,
+          "min": 20,
+          "max": 400,
+          "note": "BMW boost pressure actual (absolute), hPa = raw * 10 / 256"
+        },
+        {
+          "did": "F470",
+          "bytes": 2,
+          "at": 3,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD PID 0x70: boost pressure sensor A (absolute), 1/32 kPa"
+        },
+        {
+          "obd": "70",
+          "bytes": 2,
+          "at": 3,
+          "factor": 0.03125,
+          "offset": 0,
+          "min": 20,
+          "max": 600,
+          "note": "OBD service 01 PID 0x70 (same as F470)"
+        }
+      ],
+      "loadTarget": [
+        {
+          "did": "480C",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.0234375,
+          "offset": 0,
+          "min": 0,
+          "max": 250,
+          "note": "BMW requested relative air charge, % = raw * 0.75 / 32"
+        }
+      ],
+      "loadActual": [
+        {
+          "did": "5813",
+          "bytes": 1,
+          "at": 0,
+          "factor": 0.75,
+          "offset": 0,
+          "min": 0,
+          "max": 191.25,
+          "note": "BMW actual relative air charge, % = raw * 0.75"
+        }
+      ],
+      "timing": [
+        {
+          "obd": "0E",
+          "bytes": 1,
+          "at": 0,
+          "factor": 0.5,
+          "offset": -64,
+          "min": -64,
+          "max": 63.5,
+          "note": "OBD service 01 PID 0x0E timing advance, degrees before TDC (cylinder 1)"
+        },
+        {
+          "did": "F40E",
+          "bytes": 1,
+          "at": 0,
+          "factor": 0.5,
+          "offset": -64,
+          "min": -64,
+          "max": 63.5,
+          "note": "the same PID over UDS 0x22"
+        }
+      ],
+      "misfire": {
+        "tid": "0C",
+        "note": "set to {} to switch off; \"ecu\" to ask another unit"
+      },
+      "egs": [
+        {
+          "ecu": 24,
+          "did": "6000",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 160,
+          "note": "ZF 8HP (GSZFBCE) _GETRIEBEOELTEMPERATUR, deg C + 40 (idrive7-apps PR #29, read on a G22)"
+        },
+        {
+          "ecu": 24,
+          "did": "DA12",
+          "bytes": 1,
+          "at": 0,
+          "factor": 1,
+          "offset": -48,
+          "min": -40,
+          "max": 160,
+          "note": "gearbox unit (EGS, 0x18) transmission oil temperature, deg C + 48 (from a forum report, not confirmed on a car: only shown once it changes; the replies go to the log, \"raw EGS\")"
+        }
+      ]
+    },
+    "comment": "scaling, xdrive and dme as M Vitals (cauliflowermossgrape/idrive7-apps apps/car_vitals) reads them",
+    "battery": {
+      "comment": "the high-voltage battery unit (SME, ecu 7), as eDrive Live reads it (confirmed on the X5 45e): power = voltage x current x powerSign / 1000 (kW, + drawing)",
+      "powerSign": -1,
+      "hvV": [
+        {
+          "ecu": 7,
+          "did": "DDB4",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.01,
+          "min": 150,
+          "max": 500,
+          "timeoutMs": 600
+        }
+      ],
+      "hvI": [
+        {
+          "ecu": 7,
+          "did": "DD69",
+          "bytes": 4,
+          "at": 0,
+          "factor": 0.01,
+          "signed": true,
+          "min": -800,
+          "max": 800,
+          "timeoutMs": 600
+        }
+      ],
+      "soc": [
+        {
+          "ecu": 7,
+          "did": "DDBC",
+          "bytes": 2,
+          "at": 0,
+          "factor": 0.1,
+          "min": 0,
+          "max": 100
+        }
+      ]
+    }
+  }
+}

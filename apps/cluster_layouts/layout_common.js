@@ -77,6 +77,19 @@ const boxBezel = () => ({ key: 'boxBezel', kind: 'panel', x: 1476, y: 258, w: 19
     colors: () => ({ top: '#232227', bottom: BRACKET, border: '#2e2d33' }) });
 /* a second, smaller one at the top right, where the stock eDrive readout sits on a plug-in hybrid */
 const EDRIVE_HOLE = { x: 1770, y: 170, w: 150, h: 95 };
+/*
+ * Settings > Cluster: M car. An M car's KOMBI leaves two more dark boxes in the middle of the panel while a
+ * layout is up (its own readouts' places in its M display), measured from one photo of a car showing Digital dash:
+ * the photo's perspective fitted to the six tiles' corners (fit within 2 px of the photo, about 4 px here), then
+ * the boxes' corners read back. The second box's right and bottom edges were at the tile's edges in the photo,
+ * so it may reach further; the holes keep a margin round each (and more to the right and below the second).
+ */
+const M_BOXES = [{ x: 793, y: 289, w: 246, h: 92 }, { x: 1223, y: 328, w: 171, h: 78 }];
+const M_HOLES = [{ x: 778, y: 274, w: 276, h: 122 }, { x: 1208, y: 313, w: 207, h: 113 }];
+/** True for an M car (Settings > Cluster). */
+const mCar = (o) => !!o && o.cluster === 'm';
+/** The KOMBI's dark boxes a layout keeps its readings out of, for this car: the gear box, and an M car's two. */
+const holes = (o) => [GEARBOX_HOLE, EDRIVE_HOLE].concat(mCar(o) ? M_HOLES : []);
 /* the stock warning lights and the fallback gear letter along the bottom middle */
 const TELLTALES = { x: 560, y: 652, w: 960, h: 68 };
 /** Rectangles covering r but not hole: r itself when they don't meet, else up to four around the hole (the
@@ -162,5 +175,5 @@ const flat = (key, x, y, w, h, colour) => ({ key, kind: 'flat', x, y, w, h, colo
 
 module.exports = {
     isNum, speedIn, speedUnit, tempIn, tempText, speedText, speedScale, rpmScale, tempFrac, gearText, selectorLit, clock, modeText, text, flat,
-    MAP, aroundMap, overMap, cut, NOTCH, GEARBOX_HOLE, boxBezel, EDRIVE_HOLE, TELLTALES, inCorner, distText, erangeText, splitText, outsideText, socText, kwText, reading, readingUp, bar, engineFocus, focus, boostText, torqueText, timingText, boostFrac,
+    MAP, aroundMap, overMap, cut, NOTCH, GEARBOX_HOLE, boxBezel, EDRIVE_HOLE, M_BOXES, M_HOLES, mCar, holes, TELLTALES, inCorner, distText, erangeText, splitText, outsideText, socText, kwText, reading, readingUp, bar, engineFocus, focus, boostText, torqueText, timingText, boostFrac,
 };

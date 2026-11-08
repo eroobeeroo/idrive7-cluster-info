@@ -153,6 +153,15 @@ box doesn't show on the car (only its top edge peeks out): the box sits above th
 draws can fill it. By default the layouts leave plain black round it, so the box's black window
 disappears into the background; Settings > Frame behind the gear box puts a grey frame round it instead.
 
+**M cars** (Settings > Cluster > M car): an M car's KOMBI leaves two more dark boxes in the middle of the
+panel while a layout is up, over whatever is drawn there. With the setting on, each layout moves its readings
+round them: Digital dash makes its middle and right top tiles one line high above the boxes, Track moves its gear
+card and right tiles below them, Modern wide moves its centre readings and gear below them, Freedom moves the
+speed to the left and the gear to the right, and the panel between the dials narrows. The rev counters of
+Analog sport, Digital round and Retro are too big to move out of the middle, so the boxes still sit on their
+faces. The boxes' places were measured from one photo of a car (`layout_common.M_BOXES`, to within about 10 px):
+a straight-on photo would tighten them.
+
 ## Vehicles
 
 Made and measured on a G05 X5 xDrive45e (iDrive 7 MGU, the 12.3" Live Cockpit Professional cluster); every

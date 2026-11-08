@@ -102,10 +102,24 @@ function tile(o, id, x, y, w, h) {
             { mark: (d) => (r.hot === null ? 2 : (r.hot - r.lo) / (r.hi - r.lo)) }),
     ];
 }
+/** A slim tile, one line high (Settings > Cluster: M car, where the M KOMBI's boxes take the tile's lower part):
+ * card, icon, title and unit, the value at the right end, its bar along the bottom. */
+function slimTile(o, id, x, y, w, h) {
+    const r = READ[id], k = 't_' + id;
+    const accent = (t, d) => (hot(r, d) ? t.warm : t.glow);
+    return [
+        card(k + 'C', x, y, w, h),
+        icon(k + 'I', x + 14, y + Math.round((h - 26) / 2) - 3, 26, r.icon, accent),
+        label(k + 'L', x + 48, y + Math.round((h - 20) / 2) - 3, 150, r.title + '  ' + readUnit(o, r)),
+        C.text(k + 'V', x + 150, y + 4, w - 166, h - 16, (d) => readText(o, r, d), (t, d) => ({ color: [hot(r, d) ? t.warm : t.text, 1], glow: [accent(t, d), 0.08] }), { align: 1, chars: 6 }),
+        bar(k + 'B', x + 10, y + h - 10, w - 20, 6, (d) => frac(r.value(d), r.lo, r.hi) || 0, (t, d) => fillC(t, d),
+            { mark: (d) => (r.hot === null ? 2 : (r.hot - r.lo) / (r.hi - r.lo)) }),
+    ];
+}
 /** A compact reading for the strips: icon, value with its unit, title under it. */
 function compact(o, id, x, y, w, up) {
     const r = READ[id], k = 'c_' + id;
-    const val = (d) => { const s = readText(o, r, d); return s === '--' ? s : s + (r.boost ? '' : '°'); };
+    const val = (d) => { const s = readText(o, r, d); return s === '--' ? s : s + (r.boost || r.rail ? '' : '°'); };
     const col = (t, d) => ({ color: [hot(r, d) ? t.warm : t.text, 1], glow: [t.glow, 0.05] });
     // up: the label above the value (a row that must end above the warning lights)
     if (up) {
@@ -187,7 +201,14 @@ module.exports = {
         /* the middle: six tiles; with the map, a strip under it; with the stock centre, two columns beside it */
         if (!map && !stock) {
             const X = 430, Y = 200, Wd = 960, Ht = 440, gap = 16, cw = (Wd - 2 * gap) / 3, ch = (Ht - gap) / 2;
-            ['oil', 'coolant', 'gearbox', 'iat', engine ? 'rail' : 'batt', 'boost'].forEach((id, i) => list.push(...tile(o, id, Math.round(X + (i % 3) * (cw + gap)), Math.round(Y + Math.floor(i / 3) * (ch + gap)), Math.round(cw), Math.round(ch))));
+            // an M car: the KOMBI's two boxes sit in the lower part of the top row's middle and right tiles
+            // (layout_common.M_HOLES, from y 274), so those two are slim, one line above the boxes, and the boxes
+            // sit on the plain background under them
+            const slim = C.mCar(o) ? ['coolant', 'gearbox'] : [];
+            ['oil', 'coolant', 'gearbox', 'iat', engine ? 'rail' : 'batt', 'boost'].forEach((id, i) => {
+                const tx = Math.round(X + (i % 3) * (cw + gap)), ty = Math.round(Y + Math.floor(i / 3) * (ch + gap));
+                list.push(...(slim.indexOf(id) >= 0 ? slimTile(o, id, tx, ty, Math.round(cw), 66) : tile(o, id, tx, ty, Math.round(cw), Math.round(ch))));
+            });
         } else if (map) {
             ['oil', 'coolant', 'gearbox', engine ? 'boost' : 'batt'].forEach((id, i) => list.push(...compact(o, id, 450 + i * 260, 602, 230, true)));
         } else {

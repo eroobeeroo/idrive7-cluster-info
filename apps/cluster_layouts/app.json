@@ -2,7 +2,7 @@
   "id": "cluster_layouts",
   "title": "Cluster Layouts",
   "description": "Your own layout on the whole instrument cluster (round dials, gear, temperatures), drawn by the cluster itself",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "startType": "autostart",
   "vendor": "custom",
   "loggingId": "OA9L",
@@ -249,6 +249,22 @@
         [
           "tinted",
           "Tinted, as designed"
+        ]
+      ]
+    },
+    {
+      "key": "cluster",
+      "label": "Cluster",
+      "type": "choice",
+      "default": "standard",
+      "options": [
+        [
+          "standard",
+          "Standard (X5 and other G models)"
+        ],
+        [
+          "m",
+          "M car: two more boxes in the middle, readings moved round them"
         ]
       ]
     },

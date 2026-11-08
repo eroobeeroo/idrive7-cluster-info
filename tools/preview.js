@@ -6,7 +6,8 @@
  *
  *   node tools/preview.js [--layout analog_sport] [--look comfort|sport|efficient] [--centre info|stock] [--kmh]
  *                         [--black] [--speed 62] [--rpm 3200] [--gear 4] [--stage D] [--mode S] [--oil 96] [--coolant 90]
- *                         [--out preview.png]
+ *                         [--mcar] [--out preview.png]
+ * --mcar: Settings > Cluster M car, with the M KOMBI's two dark boxes drawn over the layout as on the car
  */
 const fs = require('fs');
 const path = require('path');
@@ -28,6 +29,7 @@ function args(argv) {
         const k = argv[i].replace(/^--/, '');
         if (k === 'kmh') a.kmh = true;
         else if (k === 'black') a.black = true;
+        else if (k === 'mcar') a.mcar = true;
         else if (k === 'engine') a.engine = true;
         else a[k] = isNaN(Number(argv[i + 1])) ? argv[++i] : Number(argv[++i]);
     }
@@ -35,7 +37,7 @@ function args(argv) {
 }
 
 /** The page: draws the scene with WebGL, quad by quad, alpha-blended in order. */
-function page(scene, mapWindow) {
+function page(scene, mapWindow, over) {
     /* with the map in the centre, a stand-in for it behind the cluster's layers, where slot 0x100 shows */
     const map = mapWindow ? `<div style="position:absolute;left:416px;top:120px;width:1088px;height:480px;background:#1b222b;
 background-image:linear-gradient(28deg,transparent 47%,#3a4656 47%,#3a4656 53%,transparent 53%),linear-gradient(-62deg,transparent 48%,#2f3a48 48%,#2f3a48 52%,transparent 52%),
@@ -43,6 +45,7 @@ linear-gradient(90deg,transparent 30%,#4ea3ff 30%,#4ea3ff 31.4%,transparent 31.4
 color:#6f7f92;font:600 22px sans-serif;display:flex;align-items:center;justify-content:center">map</div>` : '';
     return `<!doctype html><html><body style="margin:0;background:#000;position:relative">${map}
 <canvas id="c" width="${scene.w}" height="${scene.h}" style="position:absolute;left:0;top:0"></canvas>
+${(over || []).map((b) => `<div style="position:absolute;left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;background:#020202;outline:1px solid #2a2a2a"></div>`).join('')}
 <script>
 const S = ${JSON.stringify(scene)};
 const TIME = ${Number(scene.time) || 0};   /* the renderer's clock for animated pieces (--time s) */
@@ -90,23 +93,23 @@ window.__errors = errors; window.__done = true;
 </script></body></html>`;
 }
 
-async function render(scene, out, mapWindow) {
+async function render(scene, out, mapWindow, over) {
     const { chromium } = require('playwright');
     const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
     try {
         const p = await browser.newPage({ viewport: { width: scene.w, height: scene.h }, deviceScaleFactor: 1 });
 
-        await p.setContent(page(scene, mapWindow));
+        await p.setContent(page(scene, mapWindow, over));
         await p.waitForFunction(() => window.__done === true, null, { timeout: 30000 });
         const errors = await p.evaluate(() => window.__errors);
-        await (await p.$('#c')).screenshot({ path: out });
+        await p.screenshot({ path: out, clip: { x: 0, y: 0, width: scene.w, height: scene.h } });
         return errors;
     } finally { await browser.close(); }
 }
 
 if (require.main === module) {
     const a = args(process.argv.slice(2));
-    const s = makeScene({ layout: a.layout, look: a.look, black: !!a.black, options: { centre: a.centre, speedUnit: a.kmh ? 'kmh' : 'mph', vehicle: a.engine ? 'ice' : 'phev' },
+    const s = makeScene({ layout: a.layout, look: a.look, black: !!a.black, options: { centre: a.centre, speedUnit: a.kmh ? 'kmh' : 'mph', vehicle: a.engine ? 'ice' : 'phev', cluster: a.mcar ? 'm' : 'standard' },
         data: { speed: a.speed * (a.kmh ? 1 : 1.609344), rpm: a.rpm, gear: a.gear, stage: a.stage, mode: a.mode, driveMode: a.drive, oil: a.oil, coolant: a.coolant, outside: a.outside, soc: a.soc, kw: a.kw, erange: a.erange, frange: a.frange,
             gearbox: a.gearbox, iat: a.iat, battTemp: a.batt, boostActual: a.boost, torque: 312, timing: 14.5, hpfp: 205, boostTarget: 0.9, splitRear: a.split, engineOn: a.rpm > 300, fuelPct: a.fuel, pdDrive: 62, pdClimate: 24, pdSeats: 14 } });
     // let the needles ease to their readings
@@ -127,7 +130,7 @@ if (require.main === module) {
     const scene = s.scene();
     s.stop();
     scene.time = a.time || 0;
-    render(scene, a.out, a.centre === 'map').then((errors) => {
+    render(scene, a.out, a.centre === 'map', a.mcar ? require('../apps/cluster_layouts/layout_common').M_BOXES : []).then((errors) => {
         if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
         console.log('wrote ' + path.resolve(a.out) + ' (' + scene.quads.length + ' layers)');
         process.exit(0);

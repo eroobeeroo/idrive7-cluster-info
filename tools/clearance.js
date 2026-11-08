@@ -6,7 +6,8 @@
 require('./scene');
 const path = require('path');
 const C0 = require(path.join(__dirname, '..', 'apps', 'cluster_layouts', 'layout_common'));
-function clashes(p) {
+/** What piece p clashes with. o: the layout's options (Settings > Cluster: M car adds the M KOMBI's two boxes). */
+function clashes(p, o) {
     const C = C0, out = [];
     const isBg = /^bg|^boxBezel$/.test(p.key) || (p.kind === 'flat' && /bg/.test(String(p.colour || p.key)));
     if (isBg) return out;
@@ -22,6 +23,7 @@ function clashes(p) {
         if (inB(C.NOTCH)) out.push('under the cowl');
         if (inB(C.GEARBOX_HOLE)) out.push('in the gear box');
         if (inB(C.EDRIVE_HOLE)) out.push('under the eDrive box');
+        if (C.mCar(o) && C.M_HOLES.some(inB)) out.push('in an M box');
         if (inB(C.TELLTALES)) out.push('over the warning lights');
         if (pts.some(([x, y]) => C.inCorner(x, y))) out.push('in a corner');
         return out;
@@ -34,6 +36,7 @@ function clashes(p) {
     if (hit(C.NOTCH)) out.push('under the cowl');
     if (hit(C.GEARBOX_HOLE)) out.push('in the gear box');
     if (hit(C.EDRIVE_HOLE)) out.push('under the eDrive box');
+    if (C.mCar(o) && C.M_HOLES.some(hit)) out.push('in an M box');
     if (hit(C.TELLTALES)) out.push('over the warning lights');
     const pts = round ? [[cx - r * 0.7, cy - r * 0.7], [cx + r * 0.7, cy - r * 0.7], [cx, cy - r]] : [[p.x, p.y], [p.x + p.w, p.y]];
     if (pts.some(([x, y]) => C.inCorner(x, y))) out.push('in a corner');
@@ -44,11 +47,12 @@ module.exports = { clashes };
 if (require.main === module) {
     const { LAYOUTS } = require(path.join(__dirname, '..', 'apps', 'cluster_layouts', 'layouts'));
     let n = 0;
-    LAYOUTS.forEach((L) => ['info', 'map', 'stock'].forEach((centre) => ['phev', 'ice'].forEach((vehicle) => {
-        L.pieces({ speedUnit: 'mph', tempUnit: 'f', centre, redline: 7000, rpmMax: 8000, vehicle }).forEach((p) => {
-            const c = clashes(p);
-            if (c.length) { n++; console.log(L.id + ' ' + centre + ' ' + vehicle + ': ' + p.key + ' (' + p.kind + ' ' + [p.x, p.y, p.w, p.h].map(Math.round).join(',') + ') ' + c.join(', ')); }
+    LAYOUTS.forEach((L) => ['info', 'map', 'stock'].forEach((centre) => ['phev', 'ice'].forEach((vehicle) => ['standard', 'm'].forEach((cluster) => {
+        const o = { speedUnit: 'mph', tempUnit: 'f', centre, redline: 7000, rpmMax: 8000, vehicle, cluster };
+        L.pieces(o).forEach((p) => {
+            const c = clashes(p, o);
+            if (c.length) { n++; console.log(L.id + ' ' + centre + ' ' + vehicle + ' ' + cluster + ': ' + p.key + ' (' + p.kind + ' ' + [p.x, p.y, p.w, p.h].map(Math.round).join(',') + ') ' + c.join(', ')); }
         });
-    })));
+    }))));
     console.log(n ? n + ' clashes' : 'all clear');
 }

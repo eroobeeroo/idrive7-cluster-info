@@ -110,6 +110,16 @@ LAYOUTS.forEach((L) => ['info', 'map', 'stock'].forEach((centre) => ['phev', 'ic
     const bad = ps.map((p) => [p.key, clashes(p)]).filter(([, c]) => c.length).map(([k, c]) => k + ' ' + c.join(', '));
     assert(!bad.length, bad.join('; '));
 }))));
+/* Settings > Cluster: M car: the same, with the M KOMBI's two boxes in the middle; only a rev counter's own face
+ * (layouts.M_ON_DIAL) may sit under them, since it can't move out of the middle */
+const { M_ON_DIAL } = require(path.join(__dirname, '..', 'apps', 'cluster_layouts', 'layouts'));
+LAYOUTS.forEach((L) => ['info', 'map', 'stock'].forEach((centre) => ['phev', 'ice'].forEach((vehicle) => check(L.id + ' (' + centre + ', ' + vehicle + ', M car): readings clear of the M KOMBI\'s boxes too', () => {
+    const o = { speedUnit: 'mph', tempUnit: 'f', centre, redline: 7000, rpmMax: 8000, vehicle, cluster: 'm' };
+    const ps = L.pieces(o);
+    assert(ps.length <= 60, ps.length + ' pieces');
+    const bad = ps.map((p) => [p.key, clashes(p, o).filter((c) => !(c === 'in an M box' && M_ON_DIAL.indexOf(p.key) >= 0))]).filter(([, c]) => c.length).map(([k, c]) => k + ' ' + c.join(', '));
+    assert(!bad.length, bad.join('; '));
+}))));
 
 /* 60 frames a second, a reading drawn within 5 ms: an update (every needle, bar and text of the layout) takes
  * well under 5 ms here; the unit's CPU is slower, so the budget asserted is 1.5 ms (worst 4 ms) on this machine */

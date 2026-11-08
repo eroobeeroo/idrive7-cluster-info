@@ -62,6 +62,7 @@ mgu.run({
             speedUnit: settings.get('speedUnit'), tempUnit: settings.get('tempUnit'), centre: settings.get('centre'),
             redline: Number(settings.get('redline')) || 7000, rpmMax: Number(settings.get('rpmMax')) || 8000,
             boxClear: settings.get('boxClear') === 'on',
+            cluster: settings.get('cluster') === 'm' ? 'm' : 'standard',   // an M car's KOMBI: its two boxes in the middle (layouts.js)
             boxBezel: settings.get('boxBezel') === 'on',   // (off: the box sits on the plain background)
             vehicle: D.vehicle().vehicle,      // set, or found from the car (Auto)
         });
@@ -96,7 +97,7 @@ mgu.run({
             onFresh: D.onFresh,
         });
         let cluster = start();
-        let lastVehicle = null;
+        let lastVehicle = null, lastModeGear = null;
         // the engine-unit readings the layout shows, read fast while it shows
         setInterval(() => {
             if (showing()) D.want((layout.needs || []).concat(require('./layout_common').focus.needs(options())));
@@ -104,12 +105,19 @@ mgu.run({
             // the vehicle found (Settings > Vehicle: Auto): the layout redrawn for it once known
             const v = D.vehicle().vehicle;
             if (v !== lastVehicle) { if (lastVehicle) cluster.rebuild(); lastVehicle = v; }
+            // drive mode and gear changes in the log (timestamped), beside the cluster's target changes: what the
+            // KOMBI does to the layout on a mode change (the stock cluster back for a few seconds) shows in one log
+            const dn = data(), mg = (dn.driveMode || '-') + ' / ' + (dn.gear == null ? '-' : dn.gear);
+            if (mg !== lastModeGear) {
+                if (lastModeGear !== null && !dn.demo) log.info('drive mode / gear: ' + lastModeGear + ' -> ' + mg + '   (cluster: ' + JSON.stringify(cluster.status()) + ')');
+                lastModeGear = mg;
+            }
         }, 500);
         settings.onChange((k) => {
             if (k === 'clusterSlot') { cluster.stop(); cluster = start(); return; }
             if (k === 'look' || k === 'background') return cluster.recolour();
             if (k === 'layout') layout = byId(settings.get('layout'));
-            if (['layout', 'centre', 'speedUnit', 'tempUnit', 'redline', 'rpmMax', 'boxClear', 'boxBezel', 'vehicle', 'tankLitres', 'batteryReads'].indexOf(k) >= 0) cluster.rebuild();
+            if (['layout', 'centre', 'speedUnit', 'tempUnit', 'redline', 'rpmMax', 'boxClear', 'boxBezel', 'cluster', 'vehicle', 'tankLitres', 'batteryReads'].indexOf(k) >= 0) cluster.rebuild();
         });
 
         /* ---------- the car's range and charge signals, from its own catalog ---------- */
